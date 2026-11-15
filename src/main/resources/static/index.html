@@ -15,9 +15,14 @@
   <nav>
     <button class="nav-link active" data-view="home">Home</button>
     <button class="nav-link" data-view="shop">Shop</button>
-    <button class="nav-link" data-view="orders">My orders</button>
-    <button class="nav-link" data-view="admin">Admin</button>
-    <button class="cart-pill" data-view="cart">Cart <b id="cart-count">0</b></button>
+    <button class="nav-link" data-view="orders" id="nav-orders">My orders</button>
+    <button class="nav-link" data-view="admin" id="nav-admin" style="display:none;">Admin <span class="admin-badge">Admin</span></button>
+    <button class="cart-pill" data-view="cart" id="nav-cart">Cart <b id="cart-count">0</b></button>
+    <div class="user-pill" id="user-badge" title="Click to switch between Student and Admin">
+      <span class="user-role-badge" id="user-role-label">Student</span>
+      <span class="user-name" id="nav-user-name">Demo Student</span>
+      <button class="switch-user-btn" id="open-login-btn">Switch</button>
+    </div>
   </nav>
 </header>
 
@@ -33,7 +38,7 @@
         <p class="subhead">Find your next study essential. From durable backpacks to study lamps, checkout is quick with automatic student discounts and live inventory.</p>
         <div class="hero-actions">
           <button class="primary" data-view="shop">Browse the shop <span>→</span></button>
-          <button class="secondary" data-view="orders">View orders</button>
+          <button class="secondary" data-view="orders" id="hero-orders-btn">View orders</button>
         </div>
         <div class="hero-perks">
           <span>✓ 10% Student discount</span>
@@ -188,18 +193,19 @@
   <section id="admin" class="view">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">STORE TOOLS</p>
-        <h2>Product management</h2>
+        <p class="eyebrow">STORE TOOLS & INVENTORY</p>
+        <h2>Administrator Product Management</h2>
       </div>
+      <span class="admin-pill-badge">ADMIN ACCESS ONLY</span>
     </div>
     <div class="admin-layout">
       <form id="product-form" class="panel form-grid">
         <h3 id="product-form-title">Add a product</h3>
         <input type="hidden" id="product-id">
-        <label>Product name<input id="product-name" required maxlength="120"></label>
-        <label>Description<input id="product-description" maxlength="500"></label>
-        <label>Price (₹)<input id="product-price" type="number" min="0" step="0.01" required></label>
-        <label>Available stock<input id="product-stock" type="number" min="0" step="1" required></label>
+        <label>Product name<input id="product-name" required maxlength="120" placeholder="e.g. Ergonomic Highlighter"></label>
+        <label>Description<input id="product-description" maxlength="500" placeholder="Short description of the item"></label>
+        <label>Price (₹)<input id="product-price" type="number" min="0" step="0.01" required placeholder="0.00"></label>
+        <label>Available stock<input id="product-stock" type="number" min="0" step="1" required placeholder="0"></label>
         <div class="form-actions">
           <button class="primary" type="submit">Save product</button>
           <button class="secondary" type="button" id="cancel-edit">Cancel</button>
@@ -209,17 +215,20 @@
     </div>
   </section>
 
-  <!-- CUSTOMER BAR -->
-  <section class="customer-bar">
+  <!-- USER / CUSTOMER STATUS BAR -->
+  <section class="customer-bar" id="customer-bar">
     <div>
-      <p class="eyebrow">SHOPPING AS</p>
-      <strong id="customer-name">Loading customer…</strong>
+      <p class="eyebrow" id="customer-bar-eyebrow">SHOPPING AS</p>
+      <strong id="customer-name">Loading account…</strong>
       <span id="customer-email"></span>
     </div>
-    <button class="text-button" id="edit-customer">Edit details</button>
+    <div class="customer-bar-actions">
+      <button class="text-button" id="edit-customer">Edit details</button>
+      <button class="switch-account-btn" id="footer-switch-btn">Switch Account / Role</button>
+    </div>
   </section>
 
-  <!-- CUSTOMER DIALOG -->
+  <!-- CUSTOMER EDIT PROFILE DIALOG -->
   <dialog id="customer-dialog">
     <form id="customer-form" method="dialog" class="panel form-grid">
       <button class="close" value="cancel" aria-label="Close">×</button>
@@ -230,6 +239,64 @@
       <label>Phone<input id="customer-phone-input" maxlength="30"></label>
       <button class="primary" value="save">Save details</button>
     </form>
+  </dialog>
+
+  <!-- LOGIN / ROLE SWITCHING DIALOG -->
+  <dialog id="login-dialog">
+    <div class="panel login-panel">
+      <button class="close" id="close-login-dialog" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">ACCOUNT SELECTION</p>
+      <h2>Sign in to Campus Cart</h2>
+      <p class="subhead" style="margin: 6px 0 20px;">Choose whether you are accessing the shop as a campus student or as a store administrator.</p>
+
+      <div class="role-selector">
+        <button type="button" class="role-tab active" id="tab-student" data-role="CUSTOMER">
+          <span class="tab-icon">🎓</span>
+          <div>
+            <strong>Student / Customer</strong>
+            <small>Browse, personal cart & orders</small>
+          </div>
+        </button>
+        <button type="button" class="role-tab" id="tab-admin" data-role="ADMIN">
+          <span class="tab-icon">⚙️</span>
+          <div>
+            <strong>Store Administrator</strong>
+            <small>Manage catalog & inventory</small>
+          </div>
+        </button>
+      </div>
+
+      <!-- Student Login Form -->
+      <form id="student-login-form" class="form-grid login-role-section">
+        <label>Student Email
+          <input type="email" id="login-student-email" value="student@example.com" required placeholder="your.name@college.edu">
+        </label>
+        <label>Student Name (optional)
+          <input type="text" id="login-student-name" placeholder="Demo Student">
+        </label>
+        <div class="quick-demo-accounts">
+          <span>Quick 1-Click Login:</span>
+          <button type="button" class="quick-btn" id="quick-student-btn">🎓 Demo Student (student@example.com)</button>
+        </div>
+        <button class="primary" type="submit" style="margin-top: 10px;">Sign in as Student <span>→</span></button>
+      </form>
+
+      <!-- Admin Login Form -->
+      <form id="admin-login-form" class="form-grid login-role-section" style="display:none;">
+        <label>Admin Email
+          <input type="email" id="login-admin-email" value="admin@campuscart.edu" required>
+        </label>
+        <label>Admin Password
+          <input type="password" id="login-admin-password" value="admin123" required placeholder="admin123">
+        </label>
+        <div class="quick-demo-accounts">
+          <span>Default Credentials:</span>
+          <small style="color:var(--muted); display:block; margin-top:3px;">Password is <code>admin123</code></small>
+          <button type="button" class="quick-btn" id="quick-admin-btn">⚙️ Store Administrator (admin@campuscart.edu)</button>
+        </div>
+        <button class="primary" type="submit" style="margin-top: 10px; background: #235a43;">Sign in as Administrator <span>→</span></button>
+      </form>
+    </div>
   </dialog>
 
   <div id="toast" role="status" class="toast"></div>
