@@ -1,16 +1,244 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Campus Cart</title><link rel="stylesheet" href="/styles.css"></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Cart — Online Shopping Cart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
 <body>
-<header class="topbar"><a class="brand" href="#shop"><span class="brand-mark">C</span> Campus Cart</a><nav><button class="nav-link active" data-view="shop">Shop</button><button class="nav-link" data-view="orders">My orders</button><button class="nav-link" data-view="admin">Admin</button><button class="cart-pill" data-view="cart">Cart <b id="cart-count">0</b></button></nav></header>
+<header class="topbar">
+  <a class="brand" href="#home" data-view="home"><span class="brand-mark">C</span> Campus Cart</a>
+  <nav>
+    <button class="nav-link active" data-view="home">Home</button>
+    <button class="nav-link" data-view="shop">Shop</button>
+    <button class="nav-link" data-view="orders">My orders</button>
+    <button class="nav-link" data-view="admin">Admin</button>
+    <button class="cart-pill" data-view="cart">Cart <b id="cart-count">0</b></button>
+  </nav>
+</header>
+
 <main>
-<section class="welcome"><div><p class="eyebrow">A little easier, between classes</p><h1>Good things for<br><em>campus life.</em></h1><p class="subhead">Find your next study essential. Checkout is quick, and your cart stays up to date with live stock.</p><button class="primary" data-view="shop">Browse the shop <span>→</span></button></div><div class="hero-art" aria-hidden="true"><div class="sun"></div><div class="book book-one"></div><div class="book book-two"></div><div class="cup">✳</div><div class="art-note">STUDY<br>BREAK<br>REPEAT</div></div></section>
-<section id="shop" class="view active"><div class="section-heading"><div><p class="eyebrow">THE CAMPUS EDIT</p><h2>Shop essentials</h2></div><div class="search"><span>⌕</span><input id="search" placeholder="Search products" aria-label="Search products"></div></div><div id="product-list" class="product-grid"></div></section>
-<section id="cart" class="view"><div class="section-heading"><div><p class="eyebrow">READY WHEN YOU ARE</p><h2>Your cart</h2></div></div><div class="cart-layout"><div id="cart-items" class="cart-items"></div><aside id="cart-summary" class="summary"></aside></div></section>
-<section id="orders" class="view"><div class="section-heading"><div><p class="eyebrow">YOUR PURCHASES</p><h2>Order history</h2></div></div><div id="order-list" class="order-list"></div></section>
-<section id="admin" class="view"><div class="section-heading"><div><p class="eyebrow">STORE TOOLS</p><h2>Product management</h2></div></div><div class="admin-layout"><form id="product-form" class="panel form-grid"><h3 id="product-form-title">Add a product</h3><input type="hidden" id="product-id"><label>Product name<input id="product-name" required maxlength="120"></label><label>Description<input id="product-description" maxlength="500"></label><label>Price (₹)<input id="product-price" type="number" min="0" step="0.01" required></label><label>Available stock<input id="product-stock" type="number" min="0" step="1" required></label><div class="form-actions"><button class="primary" type="submit">Save product</button><button class="secondary" type="button" id="cancel-edit">Cancel</button></div></form><div id="admin-products" class="panel"></div></div></section>
-<section class="customer-bar"><div><p class="eyebrow">SHOPPING AS</p><strong id="customer-name">Loading customer…</strong><span id="customer-email"></span></div><button class="text-button" id="edit-customer">Edit details</button></section>
-<dialog id="customer-dialog"><form id="customer-form" method="dialog" class="panel form-grid"><button class="close" value="cancel" aria-label="Close">×</button><p class="eyebrow">YOUR ACCOUNT</p><h2>Customer details</h2><label>Name<input id="customer-name-input" required maxlength="120"></label><label>Email<input id="customer-email-input" type="email" required maxlength="180"></label><label>Phone<input id="customer-phone-input" maxlength="30"></label><button class="primary" value="save">Save details</button></form></dialog>
-<div id="toast" role="status" class="toast"></div>
-</main><footer><span>Campus Cart</span><span>A small student project in Java, Spring JDBC & MySQL</span></footer><script src="/app.js"></script>
-</body></html>
+  <!-- HOME / LANDING VIEW -->
+  <section id="home" class="view active">
+    <!-- Hero Section -->
+    <div class="welcome">
+      <div>
+        <div class="hero-badge"><span class="badge-dot"></span> Campus Store Edition</div>
+        <p class="eyebrow">A LITTLE EASIER, BETWEEN CLASSES</p>
+        <h1>Good things for<br><em>campus life.</em></h1>
+        <p class="subhead">Find your next study essential. From durable backpacks to study lamps, checkout is quick with automatic student discounts and live inventory.</p>
+        <div class="hero-actions">
+          <button class="primary" data-view="shop">Browse the shop <span>→</span></button>
+          <button class="secondary" data-view="orders">View orders</button>
+        </div>
+        <div class="hero-perks">
+          <span>✓ 10% Student discount</span>
+          <span>✓ Real-time stock verification</span>
+          <span>✓ Zero pickup wait</span>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="sun"></div>
+        <div class="book book-one"></div>
+        <div class="book book-two"></div>
+        <div class="cup">✳</div>
+        <div class="art-note">STUDY<br>BREAK<br>REPEAT</div>
+      </div>
+    </div>
+
+    <!-- Value Props / Feature Highlights -->
+    <div class="landing-section">
+      <div class="section-heading text-center">
+        <div>
+          <p class="eyebrow">BUILT FOR STUDENTS</p>
+          <h2>Everything in sync with campus life</h2>
+        </div>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon icon-green">⚡</div>
+          <h3>Atomic Stock Checks</h3>
+          <p>Database transaction locks prevent overselling so you never encounter cancelled orders.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon icon-peach">🏷️</div>
+          <h3>Automatic 10% Discount</h3>
+          <p>Instant savings calculated at checkout on every order for registered student accounts.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon icon-lavender">⏱️</div>
+          <h3>Between-Class Pickup</h3>
+          <p>Order on your phone while leaving lecture and collect your supplies immediately.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon icon-gold">◒</div>
+          <h3>Curated Daily Gear</h3>
+          <p>No endless clutter—just trusted study gear, backpacks, desk lamps, and stationery.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured Products Showcase -->
+    <div class="landing-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">TOP PICKS</p>
+          <h2>Trending study essentials</h2>
+        </div>
+        <button class="text-button view-all-btn" data-view="shop">Explore all products →</button>
+      </div>
+      <div id="featured-product-list" class="product-grid"></div>
+    </div>
+
+    <!-- How It Works Flow -->
+    <div class="landing-section steps-section">
+      <div class="section-heading text-center">
+        <div>
+          <p class="eyebrow">HOW IT WORKS</p>
+          <h2>From cart to classroom in three steps</h2>
+        </div>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-num">01</span>
+          <h3>Pick your essentials</h3>
+          <p>Search or browse curated campus items with real-time stock numbers.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-num">02</span>
+          <h3>Checkout with discount</h3>
+          <p>Review subtotal, apply your student discount automatically, and confirm atomically.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-num">03</span>
+          <h3>Collect on campus</h3>
+          <p>Pick up your order right at the student union desk between classes.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Story / Quote -->
+    <div class="landing-section quote-section">
+      <div class="quote-card">
+        <span class="quote-mark">“</span>
+        <p class="quote-text">Campus Cart made life so much simpler during exam crunch week. I ordered a replacement study lamp and extra notebook sets right before my afternoon library sprint.</p>
+        <div class="quote-author">
+          <strong>Aarav Sharma</strong>
+          <span>3rd Year Computer Science · Campus Resident</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom CTA Banner -->
+    <div class="landing-cta-banner">
+      <div class="cta-content">
+        <p class="eyebrow" style="color:var(--lime)">GET STARTED TODAY</p>
+        <h2>Ready for your next study session?</h2>
+        <p>Explore our full catalogue of campus essentials with guaranteed availability and instant student discounts.</p>
+        <button class="primary cta-btn" data-view="shop">Start shopping now <span>→</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHOP VIEW -->
+  <section id="shop" class="view">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">THE CAMPUS EDIT</p>
+        <h2>Shop essentials</h2>
+      </div>
+      <div class="search">
+        <span>⌕</span>
+        <input id="search" placeholder="Search products" aria-label="Search products">
+      </div>
+    </div>
+    <div id="product-list" class="product-grid"></div>
+  </section>
+
+  <!-- CART VIEW -->
+  <section id="cart" class="view">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">READY WHEN YOU ARE</p>
+        <h2>Your cart</h2>
+      </div>
+    </div>
+    <div class="cart-layout">
+      <div id="cart-items" class="cart-items"></div>
+      <aside id="cart-summary" class="summary"></aside>
+    </div>
+  </section>
+
+  <!-- ORDERS VIEW -->
+  <section id="orders" class="view">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">YOUR PURCHASES</p>
+        <h2>Order history</h2>
+      </div>
+    </div>
+    <div id="order-list" class="order-list"></div>
+  </section>
+
+  <!-- ADMIN VIEW -->
+  <section id="admin" class="view">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">STORE TOOLS</p>
+        <h2>Product management</h2>
+      </div>
+    </div>
+    <div class="admin-layout">
+      <form id="product-form" class="panel form-grid">
+        <h3 id="product-form-title">Add a product</h3>
+        <input type="hidden" id="product-id">
+        <label>Product name<input id="product-name" required maxlength="120"></label>
+        <label>Description<input id="product-description" maxlength="500"></label>
+        <label>Price (₹)<input id="product-price" type="number" min="0" step="0.01" required></label>
+        <label>Available stock<input id="product-stock" type="number" min="0" step="1" required></label>
+        <div class="form-actions">
+          <button class="primary" type="submit">Save product</button>
+          <button class="secondary" type="button" id="cancel-edit">Cancel</button>
+        </div>
+      </form>
+      <div id="admin-products" class="panel"></div>
+    </div>
+  </section>
+
+  <!-- CUSTOMER BAR -->
+  <section class="customer-bar">
+    <div>
+      <p class="eyebrow">SHOPPING AS</p>
+      <strong id="customer-name">Loading customer…</strong>
+      <span id="customer-email"></span>
+    </div>
+    <button class="text-button" id="edit-customer">Edit details</button>
+  </section>
+
+  <!-- CUSTOMER DIALOG -->
+  <dialog id="customer-dialog">
+    <form id="customer-form" method="dialog" class="panel form-grid">
+      <button class="close" value="cancel" aria-label="Close">×</button>
+      <p class="eyebrow">YOUR ACCOUNT</p>
+      <h2>Customer details</h2>
+      <label>Name<input id="customer-name-input" required maxlength="120"></label>
+      <label>Email<input id="customer-email-input" type="email" required maxlength="180"></label>
+      <label>Phone<input id="customer-phone-input" maxlength="30"></label>
+      <button class="primary" value="save">Save details</button>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" class="toast"></div>
+</main>
+
+<footer>
+  <span>Campus Cart</span>
+  <span>A small student project in Java, Spring JDBC & MySQL</span>
+</footer>
+<script src="/app.js"></script>
+</body>
+</html>

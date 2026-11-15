@@ -18,7 +18,7 @@ There is no JPA/Hibernate, frontend framework, external payment service, or data
 
 1. In MySQL Workbench or the MySQL command line, run `database.sql`. It creates `online_shop`, all six tables, four sample products, and the demo customer (`student@example.com`).
 2. Copy `src/main/resources/application.properties.example` to `src/main/resources/application.properties`.
-3. Set your MySQL connection details as environment variables. In PowerShell, for the current terminal:
+3. Set your MySQL connection details as environment variables (or leave defaults if using `root` with no password on localhost:3306). In PowerShell:
 
    ```powershell
    $env:DB_URL = "jdbc:mysql://localhost:3306/online_shop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
@@ -27,26 +27,31 @@ There is no JPA/Hibernate, frontend framework, external payment service, or data
    $env:DISCOUNT_PERCENT = "10"
    ```
 
-   The example properties file also has local defaults for URL, username, and an empty password. Replace these for your own MySQL setup; do not commit real credentials.
-4. From this project folder run:
+4. Run the project using the included Maven wrapper or helper scripts:
 
-   ```sh
-   mvn spring-boot:run
-   ```
+   - **Windows:** Double-click `run.bat` or run `.\run.ps1`
+   - **Cross-platform Maven Wrapper:**
+     ```sh
+     ./mvnw spring-boot:run
+     ```
+   - **Or build and run the packaged jar:**
+     ```sh
+     ./mvnw clean package
+     java -jar target/online-shopping-cart-1.0.0.jar
+     ```
 
-5. Open [http://localhost:8080](http://localhost:8080). The UI uses the demo customer with ID `1`. If your customer has another ID, update `CUSTOMER_ID` near the top of `src/main/resources/static/app.js`.
-
-To make a runnable jar, use `mvn clean package` and run `java -jar target/online-shopping-cart-1.0.0.jar` with the same environment variables.
+5. Open [http://localhost:8080](http://localhost:8080). The UI starts on the editorial campus landing page and uses the demo customer with ID `1`.
 
 ## Features
 
-- Product browse, name search, add, edit, price and stock management.
-- Customer registration and profile editing through the REST API; the demo page lets the selected customer edit their details.
-- Per-customer cart with quantity changes, remove, subtotal, and stock checks.
-- Checkout calculates a configurable percentage discount and stores purchase-time product names and prices.
-- Order history and individual order detail endpoints.
-- Atomic checkout transaction: locks product rows, verifies the full cart, records the order and line items, reduces stock, then clears the cart. If any step fails, Spring rolls the transaction back.
-- Separate traditional JDBC product search endpoint for comparison with JdbcTemplate.
+- **Campus Landing Page:** Editorial hero with custom art, value highlights, curated top picks preview with instant add-to-cart, 3-step checkout guide, student testimonials, and CTA banners.
+- **Product Catalog & Search:** Name search, dynamic pricing, and stock badge.
+- **Customer Management:** Customer registration and profile editing through the REST API and demo UI dialog.
+- **Shopping Cart:** Per-customer cart with quantity changes, line removal, subtotal calculation, and stock validation.
+- **Checkout & Student Discounts:** Atomic transaction checkout with automatic percentage discount calculation and point-in-time order history.
+- **Order History:** Detailed order receipts preserving purchased product names and prices.
+- **Admin Tools:** Add and update products with validation.
+- **Traditional JDBC vs Spring JDBC:** Side-by-side comparison endpoints.
 
 ## API reference
 
@@ -122,6 +127,6 @@ Traditional JDBC makes the connection, statement, result iteration, resource cle
 
 ## Tests and verification status
 
-`src/test/java/.../PercentageDiscountPolicyTest.java` covers discount rounding and zero discount. Run all project tests with `mvn test`; run compilation and package creation with `mvn clean package`.
-
-In the generation environment for this deliverable, Java was present but Maven was not installed, and no MySQL credentials/server connection were available. Therefore Maven compilation, automated test execution, database connectivity and live browser checkout could not be verified here. Run the commands above after configuring Maven and MySQL. No working screenshots are included because the application could not be launched against a database in this environment.
+- Unit tests cover discount calculation and edge cases under `src/test/java/edu/college/shop/model/PercentageDiscountPolicyTest.java`.
+- Run all project tests with `./mvnw test` (or `mvn test`).
+- Compile and build runnable package with `./mvnw clean package`.
