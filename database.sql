@@ -9,19 +9,32 @@ CREATE TABLE IF NOT EXISTS products (
   stock INT NOT NULL DEFAULT 0 CHECK (stock >= 0),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
 CREATE TABLE IF NOT EXISTS customers (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(120) NOT NULL,
   email VARCHAR(180) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL DEFAULT 'student123',
   phone VARCHAR(30) NOT NULL DEFAULT '',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS admins (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(60) NOT NULL UNIQUE,
+  email VARCHAR(180) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  full_name VARCHAR(120) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS carts (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   customer_id BIGINT NOT NULL UNIQUE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_carts_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
 );
+
 CREATE TABLE IF NOT EXISTS cart_items (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   cart_id BIGINT NOT NULL,
@@ -31,6 +44,7 @@ CREATE TABLE IF NOT EXISTS cart_items (
   CONSTRAINT fk_cart_items_cart FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
   CONSTRAINT fk_cart_items_product FOREIGN KEY (product_id) REFERENCES products(id)
 );
+
 CREATE TABLE IF NOT EXISTS orders (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   customer_id BIGINT NOT NULL,
@@ -42,6 +56,7 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
+
 CREATE TABLE IF NOT EXISTS order_items (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   order_id BIGINT NOT NULL,
@@ -54,6 +69,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
+-- Seed initial products
 INSERT INTO products (name, description, price, stock)
 SELECT 'Canvas Backpack','Everyday backpack with a padded laptop sleeve',1299.00,18 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name='Canvas Backpack');
 INSERT INTO products (name, description, price, stock)
@@ -62,5 +78,11 @@ INSERT INTO products (name, description, price, stock)
 SELECT 'Desk Lamp','Adjustable LED study lamp',899.00,12 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name='Desk Lamp');
 INSERT INTO products (name, description, price, stock)
 SELECT 'Notebook Set','Three ruled notebooks for class notes',249.00,50 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name='Notebook Set');
-INSERT INTO customers (name,email,phone)
-SELECT 'Demo Student','student@example.com','9876543210' WHERE NOT EXISTS (SELECT 1 FROM customers WHERE email='student@example.com');
+
+-- Seed demo customer (password: student123)
+INSERT INTO customers (name, email, password, phone)
+SELECT 'Demo Student','student@example.com','student123','9876543210' WHERE NOT EXISTS (SELECT 1 FROM customers WHERE email='student@example.com');
+
+-- Seed demo administrator (username: admin, password: admin123)
+INSERT INTO admins (username, email, password, full_name)
+SELECT 'admin','admin@campuscart.edu','admin123','Store Administrator' WHERE NOT EXISTS (SELECT 1 FROM admins WHERE username='admin');

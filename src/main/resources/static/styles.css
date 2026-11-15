@@ -189,6 +189,34 @@ body {
   background: #f8faf5;
 }
 
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: #8c9388;
+  font: 500 11px 'DM Sans', sans-serif;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: all .15s;
+}
+
+.logout-btn:hover {
+  color: #bf5e34;
+  background: #faeae3;
+}
+
+.nav-login-btn {
+  background: #edf2e5;
+  color: var(--green);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-weight: 700;
+}
+
+.nav-login-btn:hover {
+  background: #e2ecd9;
+}
+
 /* LOGIN DIALOG & ROLE SELECTOR */
 .login-panel {
   width: min(520px, 94vw);
@@ -302,6 +330,204 @@ body {
 .switch-account-btn:hover {
   background: var(--green);
   color: white;
+}
+
+/* LOGIN VIEW & ACCESS CONTROL STYLES */
+.login-view-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.portal-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .03);
+}
+
+.portal-card:hover {
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .06);
+}
+
+.customer-portal {
+  border-top: 4px solid var(--green);
+}
+
+.admin-portal {
+  border-top: 4px solid #bf5e34;
+}
+
+.portal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.portal-icon {
+  font-size: 32px;
+  background: #f4f6ee;
+  border-radius: 12px;
+  padding: 10px;
+  line-height: 1;
+}
+
+.portal-header h3 {
+  margin: 4px 0 2px;
+  font-size: 20px;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.portal-header p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.portal-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.student-tag {
+  background: #e2ecd9;
+  color: var(--green);
+}
+
+.admin-tag {
+  background: #faeae3;
+  color: #bf5e34;
+}
+
+.portal-features {
+  background: #f9faf5;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.portal-feature {
+  color: #495446;
+}
+
+.portal-feature.restriction {
+  color: #b73e3e;
+  font-weight: 600;
+}
+
+.portal-feature.protected {
+  color: #a3552a;
+  font-weight: 600;
+}
+
+.portal-submit-btn {
+  margin-top: 10px;
+}
+
+.admin-submit-btn {
+  margin-top: 10px;
+  background: #bf5e34;
+}
+
+.admin-submit-btn:hover {
+  background: #a94e27;
+}
+
+.quick-demo-box {
+  background: #f7f9f2;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  margin-top: 18px;
+}
+
+.quick-demo-box span {
+  font-weight: 700;
+  font-size: 11px;
+  color: #555e52;
+  display: block;
+  letter-spacing: .3px;
+}
+
+/* ACCESS DENIED SECURITY BANNER */
+.access-denied-wrapper {
+  max-width: 620px;
+  margin: 20px auto 40px;
+}
+
+.access-denied-card {
+  background: var(--paper);
+  border: 1px solid #f0d5cd;
+  border-top: 5px solid #bf5e34;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(191, 94, 52, .08);
+}
+
+.denied-icon {
+  font-size: 46px;
+  margin-bottom: 12px;
+}
+
+.access-denied-card h2 {
+  font-size: 26px;
+  margin: 6px 0 12px;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.denied-message {
+  font-size: 14px;
+  color: #5d6759;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+.denied-reasons {
+  background: #fff8f6;
+  border: 1px solid #f6ded7;
+  border-radius: 10px;
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+
+.denied-item {
+  color: #a33820;
+}
+
+.denied-item:last-child {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.denied-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }
 
 .admin-card-action {

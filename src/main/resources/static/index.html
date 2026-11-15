@@ -18,10 +18,12 @@
     <button class="nav-link" data-view="orders" id="nav-orders">My orders</button>
     <button class="nav-link" data-view="admin" id="nav-admin" style="display:none;">Admin <span class="admin-badge">Admin</span></button>
     <button class="cart-pill" data-view="cart" id="nav-cart">Cart <b id="cart-count">0</b></button>
-    <div class="user-pill" id="user-badge" title="Click to switch between Student and Admin">
+    <button class="nav-link nav-login-btn" data-view="login" id="nav-login">Login</button>
+    <div class="user-pill" id="user-badge" title="Current session">
       <span class="user-role-badge" id="user-role-label">Student</span>
       <span class="user-name" id="nav-user-name">Demo Student</span>
-      <button class="switch-user-btn" id="open-login-btn">Switch</button>
+      <button class="switch-user-btn" id="open-login-btn" title="Switch account or role">Switch</button>
+      <button class="logout-btn" id="logout-btn" title="Sign out">Log out</button>
     </div>
   </nav>
 </header>
@@ -191,27 +193,130 @@
 
   <!-- ADMIN VIEW -->
   <section id="admin" class="view">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">STORE TOOLS & INVENTORY</p>
-        <h2>Administrator Product Management</h2>
-      </div>
-      <span class="admin-pill-badge">ADMIN ACCESS ONLY</span>
-    </div>
-    <div class="admin-layout">
-      <form id="product-form" class="panel form-grid">
-        <h3 id="product-form-title">Add a product</h3>
-        <input type="hidden" id="product-id">
-        <label>Product name<input id="product-name" required maxlength="120" placeholder="e.g. Ergonomic Highlighter"></label>
-        <label>Description<input id="product-description" maxlength="500" placeholder="Short description of the item"></label>
-        <label>Price (₹)<input id="product-price" type="number" min="0" step="0.01" required placeholder="0.00"></label>
-        <label>Available stock<input id="product-stock" type="number" min="0" step="1" required placeholder="0"></label>
-        <div class="form-actions">
-          <button class="primary" type="submit">Save product</button>
-          <button class="secondary" type="button" id="cancel-edit">Cancel</button>
+    <!-- ACCESS DENIED MESSAGE (when accessed by non-admin/customer) -->
+    <div id="admin-access-denied" class="access-denied-wrapper" style="display:none;">
+      <div class="access-denied-card">
+        <div class="denied-icon">🚫</div>
+        <p class="eyebrow" style="color: #b73e3e;">ACCESS RESTRICTED</p>
+        <h2>Administrator Privileges Required</h2>
+        <p class="denied-message">You are currently logged in as a <strong>Customer (Student)</strong>. Customer accounts do not have access to store administration, product creation, or inventory modification tools.</p>
+        <div class="denied-reasons">
+          <div class="denied-item">✕ Customers cannot create, modify, or delete products</div>
+          <div class="denied-item">✕ Customers cannot alter inventory stock levels</div>
+          <div class="denied-item">✓ Store Administrator account required to access these tools</div>
         </div>
-      </form>
-      <div id="admin-products" class="panel"></div>
+        <div class="denied-actions">
+          <button class="primary" id="denied-login-admin-btn">Sign in as Administrator <span>→</span></button>
+          <button class="secondary" data-view="shop">Return to Shop</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN CONTENT (only visible to role ADMIN) -->
+    <div id="admin-content">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">STORE TOOLS & INVENTORY</p>
+          <h2>Administrator Product Management</h2>
+        </div>
+        <span class="admin-pill-badge">ADMIN ACCESS ONLY</span>
+      </div>
+      <div class="admin-layout">
+        <form id="product-form" class="panel form-grid">
+          <h3 id="product-form-title">Add a product</h3>
+          <input type="hidden" id="product-id">
+          <label>Product name<input id="product-name" required maxlength="120" placeholder="e.g. Ergonomic Highlighter"></label>
+          <label>Description<input id="product-description" maxlength="500" placeholder="Short description of the item"></label>
+          <label>Price (₹)<input id="product-price" type="number" min="0" step="0.01" required placeholder="0.00"></label>
+          <label>Available stock<input id="product-stock" type="number" min="0" step="1" required placeholder="0"></label>
+          <div class="form-actions">
+            <button class="primary" type="submit">Save product</button>
+            <button class="secondary" type="button" id="cancel-edit">Cancel</button>
+          </div>
+        </form>
+        <div id="admin-products" class="panel"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGIN VIEW -->
+  <section id="login" class="view">
+    <div class="section-heading text-center" style="max-width: 680px; margin: 0 auto 32px;">
+      <div>
+        <p class="eyebrow">AUTHENTICATION & ACCESS SEPARATION</p>
+        <h2>Sign in to Campus Cart</h2>
+        <p class="subhead" style="margin-top: 8px;">Select your role below. Customers and Administrators have strictly separated capabilities. Customers cannot access store administration or modify products.</p>
+      </div>
+    </div>
+
+    <div class="login-view-grid">
+      <!-- STUDENT / CUSTOMER PORTAL -->
+      <div class="portal-card customer-portal">
+        <div class="portal-header">
+          <span class="portal-icon">🎓</span>
+          <div>
+            <span class="portal-tag student-tag">Customer Portal</span>
+            <h3>Student / Customer</h3>
+            <p>For campus students shopping essentials</p>
+          </div>
+        </div>
+
+        <div class="portal-features">
+          <div class="portal-feature">✓ Browse curated campus essentials</div>
+          <div class="portal-feature">✓ Personal shopping cart & instant order placement</div>
+          <div class="portal-feature">✓ Automatic 10% student discount applied</div>
+          <div class="portal-feature restriction">✕ Strictly blocked from modifying products & inventory</div>
+        </div>
+
+        <form id="page-student-login-form" class="form-grid">
+          <label>Student Email
+            <input type="email" id="page-student-email" value="student@example.com" required placeholder="your.email@college.edu">
+          </label>
+          <label>Password
+            <input type="password" id="page-student-password" value="student123" required placeholder="student123">
+          </label>
+          <button class="primary portal-submit-btn" type="submit">Sign in as Student <span>→</span></button>
+        </form>
+
+        <div class="quick-demo-box">
+          <span>Quick 1-Click Login:</span>
+          <button type="button" class="quick-btn" id="page-quick-student-btn">🎓 Demo Student (student@example.com)</button>
+        </div>
+      </div>
+
+      <!-- STORE ADMINISTRATOR PORTAL -->
+      <div class="portal-card admin-portal">
+        <div class="portal-header">
+          <span class="portal-icon">⚙️</span>
+          <div>
+            <span class="portal-tag admin-tag">Store Management</span>
+            <h3>Store Administrator</h3>
+            <p>For campus store management staff</p>
+          </div>
+        </div>
+
+        <div class="portal-features">
+          <div class="portal-feature">✓ Add and configure new products</div>
+          <div class="portal-feature">✓ Update product names, descriptions & pricing</div>
+          <div class="portal-feature">✓ Manage inventory stock numbers in real-time</div>
+          <div class="portal-feature protected">🛡️ Requires verified administrator credentials</div>
+        </div>
+
+        <form id="page-admin-login-form" class="form-grid">
+          <label>Admin Username or Email
+            <input type="text" id="page-admin-email" value="admin@campuscart.edu" required placeholder="admin or admin@campuscart.edu">
+          </label>
+          <label>Admin Password
+            <input type="password" id="page-admin-password" value="admin123" required placeholder="admin123">
+          </label>
+          <button class="primary admin-submit-btn" type="submit">Sign in as Administrator <span>→</span></button>
+        </form>
+
+        <div class="quick-demo-box">
+          <span>Default Administrator Credentials:</span>
+          <button type="button" class="quick-btn" id="page-quick-admin-btn">⚙️ Store Administrator (admin@campuscart.edu)</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -271,8 +376,8 @@
         <label>Student Email
           <input type="email" id="login-student-email" value="student@example.com" required placeholder="your.name@college.edu">
         </label>
-        <label>Student Name (optional)
-          <input type="text" id="login-student-name" placeholder="Demo Student">
+        <label>Student Password
+          <input type="password" id="login-student-password" value="student123" required placeholder="student123">
         </label>
         <div class="quick-demo-accounts">
           <span>Quick 1-Click Login:</span>

@@ -12,12 +12,21 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class CustomerRepository {
     private final JdbcTemplate jdbc;
-    private final RowMapper<Customer> mapper = (rs, row) -> new Customer(
-            rs.getLong("id"),
-            rs.getString("name"),
-            rs.getString("email"),
-            rs.getString("phone")
-    );
+    private final RowMapper<Customer> mapper = (rs, row) -> {
+        String pwd = "student123";
+        try {
+            pwd = rs.getString("password");
+            if (pwd == null || pwd.isEmpty()) pwd = "student123";
+        } catch (Exception ignored) {}
+
+        return new Customer(
+                rs.getLong("id"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getString("phone"),
+                pwd
+        );
+    };
 
     public CustomerRepository(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
@@ -35,14 +44,14 @@ public class CustomerRepository {
     }
 
     public Optional<Customer> findByEmail(String email) {
-        if (email == null) return Optional.empty();
+        if (email == null || email.trim().isEmpty()) return Optional.empty();
         return jdbc.query("SELECT * FROM customers WHERE LOWER(email)=LOWER(?)", mapper, email.trim())
                 .stream()
                 .findFirst();
     }
 
     public long insert(CustomerRequest c) {
-        jdbc.update("INSERT INTO customers(name,email,phone) VALUES(?,?,?)",
+        jdbc.update("INSERT INTO customers(name,email,phone,password) VALUES(?,?,?,'student123')",
                 c.name().trim(),
                 c.email().trim().toLowerCase(),
                 c.phone() == null ? "" : c.phone().trim());

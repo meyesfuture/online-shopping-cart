@@ -3,7 +3,8 @@ let currentUser = JSON.parse(localStorage.getItem('campus_cart_user')) || {
   id: 1,
   name: 'Demo Student',
   email: 'student@example.com',
-  role: 'CUSTOMER'
+  role: 'CUSTOMER',
+  token: 'CUSTOMER_SESSION_TOKEN_1'
 };
 
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
@@ -14,7 +15,8 @@ let toastTimer;
 async function api(path, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
-    'X-User-Role': currentUser.role || 'CUSTOMER',
+    'X-User-Role': currentUser ? (currentUser.role || 'GUEST') : 'GUEST',
+    'X-Auth-Token': currentUser ? (currentUser.token || '') : '',
     ...(options.headers || {})
   };
   const response = await fetch(path, { ...options, headers });
@@ -22,7 +24,7 @@ async function api(path, options = {}) {
     let message = `Request failed (${response.status})`;
     try {
       const errJson = await response.json();
-      message = errJson.error || message;
+      message = errJson.error || errJson.message || message;
     } catch (_) {}
     throw new Error(message);
   }
@@ -40,17 +42,33 @@ function showToast(message) {
 }
 
 function updateUserUI() {
-  const isCustomer = currentUser.role === 'CUSTOMER';
-  const isAdmin = currentUser.role === 'ADMIN';
+  const isCustomer = currentUser && currentUser.role === 'CUSTOMER';
+  const isAdmin = currentUser && currentUser.role === 'ADMIN';
+  const isGuest = !currentUser || !currentUser.role;
 
   // Update navbar user pill
+  const userBadge = $('#user-badge');
+  const navLoginBtn = $('#nav-login');
   const navUserName = $('#nav-user-name');
-  if (navUserName) navUserName.textContent = currentUser.name || 'Account';
-
   const userRoleLabel = $('#user-role-label');
-  if (userRoleLabel) {
-    userRoleLabel.textContent = isAdmin ? 'Admin' : 'Student';
-    userRoleLabel.classList.toggle('admin', isAdmin);
+
+  if (isGuest) {
+    if (userBadge) userBadge.style.display = 'none';
+    if (navLoginBtn) {
+      navLoginBtn.style.display = 'inline-block';
+      navLoginBtn.textContent = 'Login';
+    }
+  } else {
+    if (userBadge) userBadge.style.display = 'inline-flex';
+    if (navLoginBtn) {
+      navLoginBtn.style.display = 'inline-block';
+      navLoginBtn.textContent = 'Switch / Login';
+    }
+    if (navUserName) navUserName.textContent = currentUser.name || 'Account';
+    if (userRoleLabel) {
+      userRoleLabel.textContent = isAdmin ? 'Admin' : 'Student';
+      userRoleLabel.classList.toggle('admin', isAdmin);
+    }
   }
 
   // Nav item visibility based on role
@@ -77,25 +95,48 @@ function updateUserUI() {
     if (customerName) customerName.textContent = `${currentUser.name} (Store Administrator)`;
     if (customerEmail) customerEmail.textContent = `${currentUser.email} · Full Product Catalog & Stock Controls`;
     if (editCustomerBtn) editCustomerBtn.style.display = 'none';
-  } else {
+  } else if (isCustomer) {
     if (customerBarEyebrow) customerBarEyebrow.textContent = 'SHOPPING AS';
     if (customerName) customerName.textContent = currentUser.name;
-    if (customerEmail) customerEmail.textContent = currentUser.email;
+    if (customerEmail) customerEmail.textContent = `${currentUser.email} · 10% Student Discount Active`;
     if (editCustomerBtn) editCustomerBtn.style.display = 'inline-block';
+  } else {
+    if (customerBarEyebrow) customerBarEyebrow.textContent = 'GUEST VISITOR';
+    if (customerName) customerName.textContent = 'Not signed in';
+    if (customerEmail) customerEmail.textContent = 'Sign in as a student to access cart & checkout, or as admin to manage store.';
+    if (editCustomerBtn) editCustomerBtn.style.display = 'none';
   }
 }
 
 function showView(name) {
+  const isAdmin = currentUser && currentUser.role === 'ADMIN';
+  const isCustomer = currentUser && currentUser.role === 'CUSTOMER';
+
   // Guard admin view
-  if (name === 'admin' && currentUser.role !== 'ADMIN') {
-    showToast('Admin permission required. Please sign in as an Administrator.');
-    openLoginDialog('ADMIN');
-    return;
+  if (name === 'admin') {
+    const adminDenied = $('#admin-access-denied');
+    const adminContent = $('#admin-content');
+
+    if (!isAdmin) {
+      if (adminDenied) adminDenied.style.display = 'block';
+      if (adminContent) adminContent.style.display = 'none';
+      showToast('Access Denied: Customer accounts cannot access Administrator tools.');
+    } else {
+      if (adminDenied) adminDenied.style.display = 'none';
+      if (adminContent) adminContent.style.display = 'block';
+      loadAdminProducts();
+    }
   }
 
-  // Guard cart/orders for admin
-  if ((name === 'cart' || name === 'orders') && currentUser.role === 'ADMIN') {
-    showToast('Personal cart & checkout are for student accounts. Switch to Student mode to test.');
+  // Guard cart/orders for non-customer
+  if (name === 'cart' || name === 'orders') {
+    if (isAdmin) {
+      showToast('Personal cart & checkout are for Student accounts. Switch to Student mode to test.');
+    } else if (!isCustomer) {
+      showToast('Please sign in as a student to access cart & orders.');
+      showView('login');
+      return;
+    }
   }
 
   document.querySelectorAll('.view').forEach(view => {
@@ -107,7 +148,6 @@ function showView(name) {
 
   if (name === 'cart') loadCart();
   if (name === 'orders') loadOrders();
-  if (name === 'admin') loadAdminProducts();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -122,7 +162,7 @@ function productIcon(name) {
 }
 
 function renderProductCard(p) {
-  const isAdmin = currentUser.role === 'ADMIN';
+  const isAdmin = currentUser && currentUser.role === 'ADMIN';
   const actionButton = isAdmin
     ? `<button class="admin-card-action" data-edit-admin="${p.id}" title="Edit this product in Admin view">✏️ Edit</button>`
     : `<button class="add-button" data-add="${p.id}" ${p.stock < 1 ? 'disabled' : ''} aria-label="Add ${escapeHtml(p.name)} to cart">+</button>`;
@@ -180,8 +220,13 @@ async function loadProducts(search = '') {
 }
 
 async function addToCart(productId) {
-  if (currentUser.role === 'ADMIN') {
+  if (currentUser && currentUser.role === 'ADMIN') {
     showToast('Administrator accounts do not purchase. Switch to Student account to shop.');
+    return;
+  }
+  if (!currentUser || currentUser.role !== 'CUSTOMER') {
+    showToast('Please sign in as a student to add items to your cart.');
+    openLoginDialog('CUSTOMER');
     return;
   }
   try {
@@ -197,7 +242,7 @@ async function addToCart(productId) {
 }
 
 async function updateCartCount() {
-  if (currentUser.role !== 'CUSTOMER') {
+  if (!currentUser || currentUser.role !== 'CUSTOMER') {
     $('#cart-count').textContent = '0';
     return;
   }
@@ -211,8 +256,8 @@ async function updateCartCount() {
 }
 
 async function loadCart() {
-  if (currentUser.role !== 'CUSTOMER') {
-    $('#cart-items').innerHTML = '<div class="empty">Cart is available in Student / Customer mode.</div>';
+  if (!currentUser || currentUser.role !== 'CUSTOMER') {
+    $('#cart-items').innerHTML = '<div class="empty">Cart is available for Student / Customer accounts. Please sign in as a student.</div>';
     $('#cart-summary').innerHTML = '';
     return;
   }
@@ -422,6 +467,15 @@ function setLoginRoleTab(role) {
   $('#admin-login-form').style.display = !isStudent ? 'grid' : 'none';
 }
 
+function handleLogout() {
+  localStorage.removeItem('campus_cart_user');
+  currentUser = null;
+  updateUserUI();
+  updateCartCount();
+  showToast('Signed out successfully.');
+  showView('login');
+}
+
 async function handleLogin(payload) {
   try {
     const user = await api('/api/auth/login', {
@@ -432,10 +486,10 @@ async function handleLogin(payload) {
     localStorage.setItem('campus_cart_user', JSON.stringify(currentUser));
     updateUserUI();
     closeLoginDialog();
-    showToast(`Signed in as ${user.name} (${user.role === 'ADMIN' ? 'Administrator' : 'Student'})`);
+    showToast(`Signed in as ${user.name} (${user.role === 'ADMIN' ? 'Store Administrator' : 'Student Customer'})`);
 
     // Reload state
-    await loadProducts($('#search').value);
+    await loadProducts($('#search') ? $('#search').value : '');
     if (currentUser.role === 'ADMIN') {
       showView('admin');
     } else {
@@ -455,11 +509,14 @@ document.querySelectorAll('[data-view]').forEach(button => {
   });
 });
 
-$('#search').addEventListener('input', event => loadProducts(event.target.value.trim()));
+const searchInput = $('#search');
+if (searchInput) {
+  searchInput.addEventListener('input', event => loadProducts(event.target.value.trim()));
+}
 
 $('#product-form').addEventListener('submit', async event => {
   event.preventDefault();
-  if (currentUser.role !== 'ADMIN') {
+  if (!currentUser || currentUser.role !== 'ADMIN') {
     showToast('Permission denied: Only administrators can modify products');
     return;
   }
@@ -478,7 +535,7 @@ $('#product-form').addEventListener('submit', async event => {
     showToast(id ? 'Product updated successfully' : 'Product added successfully');
     clearProductForm();
     await loadAdminProducts();
-    await loadProducts($('#search').value);
+    await loadProducts(searchInput ? searchInput.value : '');
   } catch (error) {
     showToast(error.message);
   }
@@ -488,7 +545,7 @@ $('#cancel-edit').addEventListener('click', clearProductForm);
 
 // Customer details editing
 async function loadCustomer() {
-  if (currentUser.role !== 'CUSTOMER') return;
+  if (!currentUser || currentUser.role !== 'CUSTOMER') return;
   try {
     const c = await api(`/api/customers/${currentUser.id}`);
     $('#customer-name-input').value = c.name;
@@ -498,7 +555,7 @@ async function loadCustomer() {
 }
 
 $('#edit-customer').addEventListener('click', () => {
-  if (currentUser.role !== 'CUSTOMER') {
+  if (!currentUser || currentUser.role !== 'CUSTOMER') {
     showToast('Edit profile is available for Student accounts.');
     return;
   }
@@ -508,6 +565,7 @@ $('#edit-customer').addEventListener('click', () => {
 
 $('#customer-form').addEventListener('submit', async event => {
   event.preventDefault();
+  if (!currentUser || currentUser.role !== 'CUSTOMER') return;
   try {
     await api(`/api/customers/${currentUser.id}`, {
       method: 'PUT',
@@ -529,20 +587,31 @@ $('#customer-form').addEventListener('submit', async event => {
 });
 
 // Login dialog tab & submission bindings
-$('#open-login-btn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  openLoginDialog(currentUser.role === 'ADMIN' ? 'CUSTOMER' : 'ADMIN');
-});
-$('#footer-switch-btn').addEventListener('click', () => {
-  openLoginDialog(currentUser.role === 'ADMIN' ? 'CUSTOMER' : 'ADMIN');
-});
-$('#close-login-dialog').addEventListener('click', closeLoginDialog);
+const openLoginBtn = $('#open-login-btn');
+if (openLoginBtn) {
+  openLoginBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openLoginDialog(currentUser && currentUser.role === 'ADMIN' ? 'CUSTOMER' : 'ADMIN');
+  });
+}
+
+const footerSwitchBtn = $('#footer-switch-btn');
+if (footerSwitchBtn) {
+  footerSwitchBtn.addEventListener('click', () => {
+    openLoginDialog(currentUser && currentUser.role === 'ADMIN' ? 'CUSTOMER' : 'ADMIN');
+  });
+}
+
+const closeLoginDialogBtn = $('#close-login-dialog');
+if (closeLoginDialogBtn) {
+  closeLoginDialogBtn.addEventListener('click', closeLoginDialog);
+}
 
 $('#tab-student').addEventListener('click', () => setLoginRoleTab('CUSTOMER'));
 $('#tab-admin').addEventListener('click', () => setLoginRoleTab('ADMIN'));
 
 $('#quick-student-btn').addEventListener('click', () => {
-  handleLogin({ role: 'CUSTOMER', email: 'student@example.com', name: 'Demo Student' });
+  handleLogin({ role: 'CUSTOMER', email: 'student@example.com', password: 'student123' });
 });
 
 $('#quick-admin-btn').addEventListener('click', () => {
@@ -552,8 +621,8 @@ $('#quick-admin-btn').addEventListener('click', () => {
 $('#student-login-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const email = $('#login-student-email').value.trim();
-  const name = $('#login-student-name').value.trim();
-  handleLogin({ role: 'CUSTOMER', email, name });
+  const password = $('#login-student-password') ? $('#login-student-password').value.trim() : 'student123';
+  handleLogin({ role: 'CUSTOMER', email, password });
 });
 
 $('#admin-login-form').addEventListener('submit', (e) => {
@@ -562,6 +631,56 @@ $('#admin-login-form').addEventListener('submit', (e) => {
   const password = $('#login-admin-password').value.trim();
   handleLogin({ role: 'ADMIN', email, password });
 });
+
+// Full page Login View bindings
+const pageStudentForm = $('#page-student-login-form');
+if (pageStudentForm) {
+  pageStudentForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = $('#page-student-email').value.trim();
+    const password = $('#page-student-password').value.trim();
+    handleLogin({ role: 'CUSTOMER', email, password });
+  });
+}
+
+const pageAdminForm = $('#page-admin-login-form');
+if (pageAdminForm) {
+  pageAdminForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = $('#page-admin-email').value.trim();
+    const password = $('#page-admin-password').value.trim();
+    handleLogin({ role: 'ADMIN', email, password });
+  });
+}
+
+const pageQuickStudentBtn = $('#page-quick-student-btn');
+if (pageQuickStudentBtn) {
+  pageQuickStudentBtn.addEventListener('click', () => {
+    handleLogin({ role: 'CUSTOMER', email: 'student@example.com', password: 'student123' });
+  });
+}
+
+const pageQuickAdminBtn = $('#page-quick-admin-btn');
+if (pageQuickAdminBtn) {
+  pageQuickAdminBtn.addEventListener('click', () => {
+    handleLogin({ role: 'ADMIN', email: 'admin@campuscart.edu', password: 'admin123' });
+  });
+}
+
+const deniedLoginAdminBtn = $('#denied-login-admin-btn');
+if (deniedLoginAdminBtn) {
+  deniedLoginAdminBtn.addEventListener('click', () => {
+    openLoginDialog('ADMIN');
+  });
+}
+
+const logoutBtn = $('#logout-btn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    handleLogout();
+  });
+}
 
 // INITIAL SETUP ON PAGE LOAD
 updateUserUI();
