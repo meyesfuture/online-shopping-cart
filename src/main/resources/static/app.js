@@ -153,11 +153,18 @@ function showView(name) {
 }
 
 function productIcon(name) {
-  const value = name.toLowerCase();
+  const value = (name || '').toLowerCase();
   if (value.includes('bottle')) return '◉';
-  if (value.includes('lamp')) return '☼';
-  if (value.includes('notebook') || value.includes('book')) return '▤';
-  if (value.includes('bag') || value.includes('backpack')) return '◒';
+  if (value.includes('lamp') || value.includes('light')) return '☼';
+  if (value.includes('notebook') || value.includes('book') || value.includes('pad')) return '▤';
+  if (value.includes('bag') || value.includes('backpack') || value.includes('tote')) return '◒';
+  if (value.includes('headphone') || value.includes('audio') || value.includes('ear')) return '🎧';
+  if (value.includes('stand') || value.includes('laptop')) return '💻';
+  if (value.includes('calculator') || value.includes('fx-')) return '🖩';
+  if (value.includes('mug') || value.includes('coffee') || value.includes('tumbler')) return '☕';
+  if (value.includes('hub') || value.includes('adapter') || value.includes('usb-c')) return '🔌';
+  if (value.includes('pencil') || value.includes('pen') || value.includes('marker')) return '✏️';
+  if (value.includes('drive') || value.includes('flash') || value.includes('usb')) return '💾';
   return '✳';
 }
 
@@ -167,9 +174,13 @@ function renderProductCard(p) {
     ? `<button class="admin-card-action" data-edit-admin="${p.id}" title="Edit this product in Admin view">✏️ Edit</button>`
     : `<button class="add-button" data-add="${p.id}" ${p.stock < 1 ? 'disabled' : ''} aria-label="Add ${escapeHtml(p.name)} to cart">+</button>`;
 
+  const imageMarkup = p.imageUrl
+    ? `<img class="product-img" src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><div class="product-fallback-icon" style="display:none">${productIcon(p.name)}</div>`
+    : `<div class="product-fallback-icon">${productIcon(p.name)}</div>`;
+
   return `
     <article class="product-card">
-      <div class="product-visual">${productIcon(p.name)}</div>
+      <div class="product-visual">${imageMarkup}</div>
       <h3>${escapeHtml(p.name)}</h3>
       <p>${escapeHtml(p.description || 'A useful campus essential.')}</p>
       <div class="product-bottom">
@@ -389,7 +400,7 @@ async function loadOrders() {
 }
 
 async function loadAdminProducts() {
-  if (currentUser.role !== 'ADMIN') {
+  if (!currentUser || currentUser.role !== 'ADMIN') {
     $('#admin-products').innerHTML = '<div class="empty">Administrator access required.</div>';
     return;
   }
@@ -399,9 +410,12 @@ async function loadAdminProducts() {
       <h3>Current products (${items.length})</h3>
       ${items.map(p => `
         <div class="admin-product">
-          <div>
-            <strong>${escapeHtml(p.name)}</strong>
-            <small>${currency.format(p.price)} · ${p.stock} units in stock</small>
+          <div class="admin-product-info">
+            ${p.imageUrl ? `<img src="${escapeHtml(p.imageUrl)}" alt="" class="admin-product-thumb" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><div class="admin-product-thumb-placeholder" style="display:none">${productIcon(p.name)}</div>` : `<div class="admin-product-thumb-placeholder">${productIcon(p.name)}</div>`}
+            <div>
+              <strong>${escapeHtml(p.name)}</strong>
+              <small>${currency.format(p.price)} · ${p.stock} units in stock</small>
+            </div>
           </div>
           <button data-edit="${p.id}">Edit</button>
         </div>
@@ -418,6 +432,7 @@ async function loadAdminProducts() {
 function clearProductForm() {
   $('#product-form').reset();
   $('#product-id').value = '';
+  if ($('#product-image-url')) $('#product-image-url').value = '';
   $('#product-form-title').textContent = 'Add a product';
 }
 
@@ -426,9 +441,10 @@ async function editProduct(id) {
     const p = await api(`/api/products/${id}`);
     $('#product-id').value = p.id;
     $('#product-name').value = p.name;
-    $('#product-description').value = p.description;
+    $('#product-description').value = p.description || '';
     $('#product-price').value = p.price;
     $('#product-stock').value = p.stock;
+    if ($('#product-image-url')) $('#product-image-url').value = p.imageUrl || '';
     $('#product-form-title').textContent = 'Update product';
     $('#product-name').focus();
   } catch (error) {
@@ -525,7 +541,8 @@ $('#product-form').addEventListener('submit', async event => {
     name: $('#product-name').value,
     description: $('#product-description').value,
     price: Number($('#product-price').value),
-    stock: Number($('#product-stock').value)
+    stock: Number($('#product-stock').value),
+    imageUrl: $('#product-image-url') ? $('#product-image-url').value.trim() : ''
   };
   try {
     await api(id ? `/api/products/${id}` : '/api/products', {
